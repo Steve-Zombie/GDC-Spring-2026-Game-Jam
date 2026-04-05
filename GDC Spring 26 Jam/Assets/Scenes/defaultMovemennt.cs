@@ -13,6 +13,8 @@ public class defaultMovemennt : MonoBehaviour
     public float jumpForce;
     bool facingLeft = false;
     [SerializeField] private Animator animator;
+    [SerializeField] private LayerMask wallLayer; // assign wall layer in inspector
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -28,8 +30,6 @@ public class defaultMovemennt : MonoBehaviour
         //Need gravity
         moveDirection = move.action.ReadValue<Vector2>();
 
-
-
         /*float inputX = Input.GetAxis("Horizontal");
         rb.linearVelocity = new Vector2 (inputX * speed, rb.linearVelocity.y);
         if(Input.GetButtonDown("Jump") && isGrounded)
@@ -37,32 +37,47 @@ public class defaultMovemennt : MonoBehaviour
             rb.linearVelocity = new Vector2 (rb.linearVelocity.x, jumpForce);
         }*/
     }
+
     private void FixedUpdate()
     {
         if(moveDirection.x < 0 && facingLeft)
         {
             flip();
         }
-        else if(moveDirection.x > 0 && !facingLeft){
+        else if(moveDirection.x > 0 && !facingLeft)
+        {
             flip();
         }
+
         animate();
+
+        // checks for wall 
+        bool isTouchingWall = Physics2D.Raycast(transform.position, Vector2.right, 0.6f, wallLayer) || 
+                              Physics2D.Raycast(transform.position, Vector2.left, 0.6f, wallLayer);
+
+        // kills upward momentum  if touching a wall while in the air
+        if (isTouchingWall && !isGrounded && rb.linearVelocity.y > 0)
+        {
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
+        }
+
         rb.linearVelocity = new Vector2 (moveDirection.x * speed, !isGrounded? rb.linearVelocity.y: ! (moveDirection.y > 0)? rb.linearVelocity.y : moveDirection.y * jumpForce );
     }
+
     void OnCollisionEnter2D(Collision2D collission)
     {
-        
-       isGrounded = true; 
+        isGrounded = true; 
     }
+
     void OnCollisionExit2D(Collision2D collission)
     {
-        
         isGrounded = false;
         Debug.Log("Off Ground");
     }
+
     void animate()
     {
-     if (moveDirection.x != 0)
+        if (moveDirection.x != 0)
         {
             animator.SetBool("isRunning", true);
         }
@@ -79,6 +94,7 @@ public class defaultMovemennt : MonoBehaviour
             animator.SetBool("isGrounded", false);
         }   
     }
+
     private void flip()
     {
         facingLeft = !facingLeft;

@@ -25,23 +25,25 @@ public class grappling : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(1))
         {
-            isGrappling = true;
-            Debug.Log("Mouse Down");
+            isGrappling = false;
+
             point = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-            //if(Physics2D.OverlapCircle(point, 0.1f, grappleLayer))
-            /*{
+            point.z = 0f;
+
+            Collider2D hit = Physics2D.OverlapCircle(point, 0.5f, grappleLayer);
+
+            if (hit)
+            {
+                isGrappling = true;
                 lr.enabled = true;
                 lr.SetPosition(0, transform.position);
                 lr.SetPosition(1, point);
                 dj.enabled = true;
-                dj.anchor = point;
-            }*/
-            lr.enabled = true;
-            lr.SetPosition(0, transform.position);
-            lr.SetPosition(1, point);
-            dj.enabled = true;
-            dj.connectedAnchor = point;
+                dj.connectedAnchor = point;
+            }
         }
+
+        
         if (Input.GetMouseButtonUp(1))
         {
             isGrappling = false;
