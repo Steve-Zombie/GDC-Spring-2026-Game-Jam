@@ -55,13 +55,19 @@ public class defaultMovemennt : MonoBehaviour
         bool isTouchingWall = Physics2D.Raycast(transform.position, Vector2.right, 0.6f, wallLayer) || 
                               Physics2D.Raycast(transform.position, Vector2.left, 0.6f, wallLayer);
 
-        // kills upward momentum  if touching a wall while in the air
-        if (isTouchingWall && !isGrounded && rb.linearVelocity.y > 0)
+        // calculates the  vertical velocity first
+        float verticalVelocity;
+        if (!isGrounded)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0);
+            // if touching while in the air,  any upward movement is killed
+            verticalVelocity = (isTouchingWall && rb.linearVelocity.y > 0) ? 0 : rb.linearVelocity.y;
+        }
+        else
+        {
+            verticalVelocity = !(moveDirection.y > 0) ? rb.linearVelocity.y : moveDirection.y * jumpForce;
         }
 
-        rb.linearVelocity = new Vector2 (moveDirection.x * speed, !isGrounded? rb.linearVelocity.y: ! (moveDirection.y > 0)? rb.linearVelocity.y : moveDirection.y * jumpForce );
+        rb.linearVelocity = new Vector2(moveDirection.x * speed, verticalVelocity);
     }
 
     void OnCollisionEnter2D(Collision2D collission)

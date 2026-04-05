@@ -35,27 +35,34 @@ public class EnemyFinal : MonoBehaviour
         float direction = Mathf.Sign(player.position.x - transform.position.x);
         bool isPlayerAbove = Physics2D.Raycast(transform.position, Vector2.up, 6f, 1 << player.gameObject.layer);
 
-        // always chase regardless of grounded state
+        // always allows for the player to be chased regardless of if grounded or not
         rb.linearVelocity = new Vector2(direction * chaseSpeed, rb.linearVelocity.y);
 
-        // jump logic stays grounded-only
+        // jump logic only works if grounded
         if (isGrounded)
         {
             RaycastHit2D groundInFront = Physics2D.Raycast(transform.position, new Vector2(direction, 0), 2f, groundLayer);
             RaycastHit2D gapAhead = Physics2D.Raycast(transform.position + new Vector3(direction, 0, 0), Vector2.down, 2f, groundLayer);
             RaycastHit2D platformAbove = Physics2D.Raycast(transform.position, Vector2.up, 6f, groundLayer); // ← increased range
 
-            // wall in front → jump over it
+            // the enemy will jump if there's a wall in front of it, a gap ahead of it, or if the player is above and there's a platform above it. This allows the enemy to navigate the environment more effectively while still being able to chase the player.
             if (groundInFront.collider)
             {
                 shouldJump = true;
             }
-            // gap ahead → jump over it
+            // if there's a gap ahead and the player is not above, jump to try to get over the gap. 
+             else if (!isPlayerAbove && gapAhead.collider == false)
+            {
+                shouldJump = true;
+            }
+
             else if (!gapAhead.collider)
             {
                 shouldJump = true;
             }
-            // player is above and there's a platform up there → jump up
+
+           // if there's a platform above and the player is above, the enemy will try to jump to 
+           // get to the player
             else if (isPlayerAbove && platformAbove.collider)
             {
                 shouldJump = true;
