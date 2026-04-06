@@ -11,7 +11,7 @@ public class defaultMovemennt : MonoBehaviour
     public InputActionReference move;
     public bool isGrounded;
     public float jumpForce;
-    bool facingLeft = false;
+    bool facingRight = true;
     [SerializeField] private Animator animator;
     [SerializeField] private LayerMask wallLayer; // assign wall layer in inspector
 
@@ -40,11 +40,11 @@ public class defaultMovemennt : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(moveDirection.x < 0 && facingLeft)
+        if(moveDirection.x < 0 && facingRight)
         {
             flip();
         }
-        else if(moveDirection.x > 0 && !facingLeft)
+        else if(moveDirection.x > 0 && !facingRight)
         {
             flip();
         }
@@ -103,7 +103,7 @@ public class defaultMovemennt : MonoBehaviour
 
     private void flip()
     {
-        facingLeft = !facingLeft;
+        facingRight = !facingRight;
         transform.Rotate(0f, 180f, 0f);
     }
 }
