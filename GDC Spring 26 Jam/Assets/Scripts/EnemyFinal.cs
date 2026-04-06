@@ -13,6 +13,8 @@ public class EnemyFinal : MonoBehaviour
     private Rigidbody2D rb;
     private bool isGrounded;
     private bool shouldJump;
+    private bool facingRight = true;
+    [SerializeField] private Animator animator;
 
     void Start()
     {
@@ -21,7 +23,7 @@ public class EnemyFinal : MonoBehaviour
 
     void Update()
     {
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, 1f, groundLayer);
+        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, 1.5f, groundLayer);
 
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
         bool playerInRange = distanceToPlayer <= detectionRange;
@@ -29,6 +31,7 @@ public class EnemyFinal : MonoBehaviour
         if (!playerInRange)
         {
             rb.linearVelocity = new Vector2(0, rb.linearVelocity.y);
+            animate(0);
             return;
         }
 
@@ -37,6 +40,18 @@ public class EnemyFinal : MonoBehaviour
 
         // always allows for the player to be chased regardless of if grounded or not
         rb.linearVelocity = new Vector2(direction * chaseSpeed, rb.linearVelocity.y);
+
+        // flip to face player
+        if (direction < 0 && facingRight)
+        {
+            flip();
+        }
+        else if (direction > 0 && !facingRight)
+        {
+            flip();
+        }
+
+        animate(direction);
 
         // jump logic only works if grounded
         if (isGrounded)
@@ -51,24 +66,25 @@ public class EnemyFinal : MonoBehaviour
                 shouldJump = true;
             }
             // if there's a gap ahead and the player is not above, jump to try to get over the gap. 
-             else if (!isPlayerAbove && gapAhead.collider == false)
+            else if (!isPlayerAbove && gapAhead.collider == false)
             {
                 shouldJump = true;
             }
-
             else if (!gapAhead.collider)
             {
                 shouldJump = true;
             }
-
-           // if there's a platform above and the player is above, the enemy will try to jump to 
-           // get to the player
+            // if there's a platform above and the player is above, the enemy will try to jump to 
+            // get to the player
             else if (isPlayerAbove && platformAbove.collider)
             {
                 shouldJump = true;
             }
         }
+        Debug.DrawRay(transform.position, Vector2.down * 1.5f, Color.green);
+
     }
+
     private void FixedUpdate()
     {
         if (isGrounded && shouldJump)
@@ -78,6 +94,32 @@ public class EnemyFinal : MonoBehaviour
             Vector2 jumpDirection = direction * jumpForce;
             rb.AddForce(new Vector2(jumpDirection.x, jumpForce), ForceMode2D.Impulse);
         }
+    }
+
+    void animate(float direction)
+    {
+        if (direction != 0)
+        {
+            animator.SetBool("isRunning", true);
+        }
+        else
+        {
+            animator.SetBool("isRunning", false);
+        }
+        if (isGrounded)
+        {
+            animator.SetBool("isGrounded", true);
+        }
+        else
+        {
+            animator.SetBool("isGrounded", false);
+        }
+    }
+
+    private void flip()
+    {
+        facingRight = !facingRight;
+        transform.Rotate(0f, 180f, 0f);
     }
 
     private void OnDrawGizmosSelected()
