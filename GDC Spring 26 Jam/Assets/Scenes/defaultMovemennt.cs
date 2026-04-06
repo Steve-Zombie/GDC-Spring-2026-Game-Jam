@@ -55,24 +55,42 @@ public class defaultMovemennt : MonoBehaviour
         bool isTouchingWall = Physics2D.Raycast(transform.position, Vector2.right, 0.6f, wallLayer) || 
                               Physics2D.Raycast(transform.position, Vector2.left, 0.6f, wallLayer);
 
-        // calculates the  vertical velocity first
+        // calculates the horizontal and vertical velocity first
         float verticalVelocity;
-        if (!isGrounded)
+        float horizontalVelocity;
+
+        if (isTouchingWall && !isGrounded)
         {
-            // if touching while in the air,  any upward movement is killed
-            verticalVelocity = (isTouchingWall && rb.linearVelocity.y > 0) ? 0 : rb.linearVelocity.y;
+            horizontalVelocity = 0;  
+            verticalVelocity = rb.linearVelocity.y;
+        }
+        else if (!isGrounded)
+        {
+            horizontalVelocity = moveDirection.x * speed;
+            verticalVelocity = rb.linearVelocity.y;
         }
         else
         {
+            horizontalVelocity = moveDirection.x * speed;
             verticalVelocity = !(moveDirection.y > 0) ? rb.linearVelocity.y : moveDirection.y * jumpForce;
         }
 
-        rb.linearVelocity = new Vector2(moveDirection.x * speed, verticalVelocity);
+        rb.linearVelocity = new Vector2(horizontalVelocity, verticalVelocity);
     }
 
-    void OnCollisionEnter2D(Collision2D collission)
+    void OnCollisionStay2D(Collision2D collision)
     {
-        isGrounded = true; 
+        // only counts the player as as grounded if the collision is below them
+        foreach (ContactPoint2D contact in collision.contacts)
+        {
+            if (contact.normal.y > 0.5f)
+            {
+                isGrounded = true;
+                return;
+            }
+        }
+
+        
     }
 
     void OnCollisionExit2D(Collision2D collission)
